@@ -54,15 +54,17 @@ wss.on('connection', (ws) => {
                 slowmodeUsers.set(clientData.userId, now + 5000);
             }
 
-            // Einfacher Wortfilter (Beispiel: Zensiert bestimmte Wörter)
+            // Einfacher Wortfilter
             let text = data.text;
-            const badWords = ["nigga", "nga", "nigger", "nger", "niga", "niger"]; // Hier Wörter eintragen
+            const badWords = ["nigga", "nga", "nger", "niga", "niger", "nigger", "nicker", "nicka", "nikka", "nikker", "nig", "niggi", "nigi"]; // Hier Wörter eintragen
             badWords.forEach(word => {
                 let regex = new RegExp(word, 'gi');
                 text = text.replace(regex, '***');
             });
 
-            let msgId = Math.random().toString(36.substring(2, 9));
+            // Korrigierte Zeile:
+            let msgId = Math.random().toString(36).substring(2, 9);
+            
             broadcast({
                 type: 'chat',
                 id: msgId,
