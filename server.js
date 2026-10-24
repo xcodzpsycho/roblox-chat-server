@@ -5,8 +5,26 @@ let clients = new Map(); // Speichert ws -> { userId, username }
 let slowmodeUsers = new Map(); // Für den 5-Sekunden-Slowmode
 let chatLocked = false;
 
-// Whitelisted Admin UserIDs (Trage hier deine Roblox-UserIDs ein)
+// Whitelisted Admin UserIDs
 const ADMIN_IDS = [1969719705]; 
+
+// Dein Discord Webhook Link
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1563608183103033384/xlawX6_5g3y92zDOlROQOi2encDZhlTcq1VP61wktqEdO6Pn6rhRQQywLWXt9zHLIQZj";
+
+// Funktion, um Nachrichten an Discord zu senden
+async function sendToDiscord(username, text) {
+    try {
+        await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: `**[Roblox] ${username}**: ${text}`
+            })
+        });
+    } catch (error) {
+        console.error("Fehler beim Senden an Discord:", error);
+    }
+}
 
 wss.on('connection', (ws) => {
     let clientData = { userId: null, username: "Unknown" };
@@ -56,15 +74,15 @@ wss.on('connection', (ws) => {
 
             // Einfacher Wortfilter
             let text = data.text;
-            const badWords = ["nigga", "nga", "nger", "niga", "niger", "nigger", "nicker", "nicka", "nikka", "nikker", "nig", "niggi", "nigi"]; // Hier Wörter eintragen
+            const badWords = ["nigga", "nga", "nger", "niga", "niger", "nigger", "nicker", "nicka", "nikka", "nikker", "nig", "niggi", "nigi"];
             badWords.forEach(word => {
                 let regex = new RegExp(word, 'gi');
                 text = text.replace(regex, '***');
             });
 
-            // Korrigierte Zeile:
             let msgId = Math.random().toString(36).substring(2, 9);
             
+            // An alle Roblox-Spieler im WebSocket senden
             broadcast({
                 type: 'chat',
                 id: msgId,
@@ -73,6 +91,9 @@ wss.on('connection', (ws) => {
                 text: text,
                 replyTo: data.replyTo || null
             });
+
+            // 🚀 NEU: Nachricht direkt an Discord Webhook schicken!
+            sendToDiscord(clientData.username, text);
         }
 
         // 4. Nachrichten löschen
